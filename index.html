@@ -9,24 +9,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #eef2f7;
+  --bg: #fff1f2;
   --kartu: #ffffff;
-  --teks: #14213d;
-  --teks-redup: #5b667a;
-  --garis: #d6dde8;
-  --aksen: #f97316;
+  --teks: #4c0519;
+  --teks-redup: #9f1239;
+  --garis: #fecdd3;
+  --aksen: #db2777; /* Warna utama Pink */
   --bahaya: #dc2626;
   --bahaya-hover: #b91c1c;
   --sukses: #16a34a;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e1522;
-    --kartu: #172033;
-    --teks: #e8edf6;
-    --teks-redup: #98a4ba;
-    --garis: #2a3650;
-    --aksen: #fb923c;
+    --bg: #1f1017;
+    --kartu: #2a121d;
+    --teks: #ffe4e6;
+    --teks-redup: #fda4af;
+    --garis: #501d32;
+    --aksen: #f472b6; /* Warna utama Pink (Dark Mode) */
     --bahaya: #ef4444;
     --bahaya-hover: #dc2626;
     --sukses: #22c55e;
@@ -97,15 +97,15 @@ header p { margin: 0; color: var(--teks-redup); }
   display: flex;
   flex-direction: column;
 }
-.pita { height: 56px; background: #f97316; }
+.pita { height: 56px; background: var(--aksen); }
 .isi { padding: 0 16px 16px; text-align: center; flex: 1; }
 .foto {
   width: 76px; height: 76px;
   margin: -38px auto 8px;
   border-radius: 50%;
   border: 4px solid var(--kartu);
-  background: #ffedd5;
-  color: #c2410c;
+  background: #fce7f3;
+  color: var(--aksen);
   display: grid; place-items: center; font-weight: 800; font-size: 1.5rem; overflow: hidden;
 }
 .foto img { width: 100%; height: 100%; object-fit: cover; }
