@@ -52,7 +52,7 @@ header p { margin: 0; color: var(--teks-redup); }
   gap: 16px;
 }
 
-.kontrol { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0 8px; flex: 1; }
+.kontrol { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0 8px; }
 .kontrol input, .kontrol select, .tombol-aksi, .form-grup input, .form-grup select {
   font: inherit;
   color: var(--teks);
@@ -173,35 +173,25 @@ header p { margin: 0; color: var(--teks-redup); }
     </header>
     <button id="btnTambah" class="btn btn-primary">+ Tambah Guru/Siswa</button>
   </div>
+
+  <!-- BAGIAN KONTROL / FILTER YANG SUDAH DIRAPIKAN -->
   <div class="kontrol">
-  <!-- Kotak Pencarian -->
-  <input id="cari" type="search" placeholder="Cari nama atau NIS/NIP...">
-  
-  <!-- Filter Guru / Siswa -->
-  <select id="filterTipe">
-    <option value="">Guru & Siswa</option>
-    <option value="Siswa">Siswa</option>
-    <option value="Guru">Guru</option>
-  </select>
+    <input id="cari" type="search" placeholder="Cari nama atau NIS/NIP..." aria-label="Cari nama atau NIS/NIP">
+    
+    <select id="filterTipe" aria-label="Filter Guru atau Siswa">
+      <option value="">Guru & Siswa</option>
+      <option value="Siswa">Siswa</option>
+      <option value="Guru">Guru</option>
+    </select>
 
-  <!-- Filter Kelas -->
-  <select id="filterKelas">
-    <option value="">Kelas</option>
-  </select>
-
-  <!-- Filter Mapel -->
-  <select id="filterMapel">
-    <option value="">Mapel</option>
-
-    <div class="kontrol">
-    <input id="cari" type="search" placeholder="Cari nama atau NIS" aria-label="Cari nama atau NIS">
-    <select id="filterKelas" aria-label="Filter kelas">
+    <select id="filterKelas" aria-label="Filter Kelas">
       <option value="">Semua kelas</option>
     </select>
   </div>
+
   <p id="jumlah" class="jumlah" aria-live="polite"></p>
   <main id="daftar" class="daftar"></main>
-  </div>
+</div>
   
 <!-- MODAL FORM (CREATE & UPDATE) -->
 <div id="modalForm" class="modal-overlay">
@@ -265,7 +255,7 @@ const elKelas = document.getElementById("filterKelas");
 
 const modalForm = document.getElementById("modalForm");
 const modalJudul = document.getElementById("modalJudul");
-const formSiswa = document.getElementById("formSiswa");
+const formSiswa = document.getElementById("formSsiswa") || document.getElementById("formSiswa");
 const btnTambah = document.getElementById("btnTambah");
 const btnBatal = document.getElementById("btnBatal");
 
