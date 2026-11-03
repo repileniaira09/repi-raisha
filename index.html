@@ -169,30 +169,17 @@ header p { margin: 0; color: var(--teks-redup); }
   <div class="baris-atas">
     <header>
       <h1>Teknik Komputer & Jaringan</h1>
-      <p>Data Guru & Siswa</p>
+      <p>Cari Berdasarkan Role</p>
     </header>
     <button id="btnTambah" class="btn btn-primary">+ Tambah Guru/Siswa</button>
   </div>
+
   <div class="kontrol">
-  <!-- Kotak Pencarian -->
-  <input id="cari" type="search" placeholder="Cari nama atau NIS/NIP...">
-  
-  <!-- Filter Guru / Siswa -->
-  <select id="filterTipe">
-    <option value="">Guru & Siswa</option>
-    <option value="Siswa">Siswa</option>
-    <option value="Guru">Guru</option>
-  </select>
-
-  <!-- Filter Kelas -->
-  <select id="filterKelas">
-    <option value="">Kelas</option>
-  </select>
-
-  <!-- Filter Mapel -->
-  <select id="filterMapel">
-    <option value="">Mapel</option>
-    
+    <input id="cari" type="search" placeholder="Cari nama atau NIS" aria-label="Cari nama atau NIS">
+    <select id="filterKelas" aria-label="Filter kelas">
+      <option value="">Semua kelas</option>
+    </select>
+  </div>
   <p id="jumlah" class="jumlah" aria-live="polite"></p>
   <main id="daftar" class="daftar"></main>
 </div>
