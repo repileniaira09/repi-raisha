@@ -211,9 +211,10 @@ header p { margin: 0; color: var(--teks-redup); }
         <label for="inputNama">Nama Lengkap *</label>
         <input type="text" id="inputNama" required>
       </div>
+      <!-- INPUT KELAS SUDAH DIBUAT OPSIONAL (TANPA REQUIRED) -->
       <div class="form-grup">
-        <label for="inputKelas">Kelas *</label>
-        <input type="text" id="inputKelas" placeholder="Contoh: XI TKJ 1" required>
+        <label for="inputKelas">Kelas</label>
+        <input type="text" id="inputKelas" placeholder="Contoh: XI TKJ 1">
       </div>
       <div class="form-grup">
         <label for="inputMapel">Mata Pelajaran (Khusus Guru)</label>
@@ -377,7 +378,7 @@ formSiswa.addEventListener("submit", async (e) => {
   const payload = {
     nis: inputNis.value.trim(),
     nama: inputNama.value.trim(),
-    kelas: inputKelas.value.trim(),
+    kelas: inputKelas.value.trim() || null,
     mapel: inputMapel.value.trim() || null,
     jenis_kelamin: inputJK.value || null,
     tanggal_lahir: inputTglLahir.value || null,
