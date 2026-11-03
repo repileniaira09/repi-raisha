@@ -192,6 +192,16 @@ header p { margin: 0; color: var(--teks-redup); }
   <!-- Filter Mapel -->
   <select id="filterMapel">
     <option value="">Mapel</option>
+
+    <div class="kontrol">
+    <input id="cari" type="search" placeholder="Cari nama atau NIS" aria-label="Cari nama atau NIS">
+    <select id="filterKelas" aria-label="Filter kelas">
+      <option value="">Semua kelas</option>
+    </select>
+  </div>
+  <p id="jumlah" class="jumlah" aria-live="polite"></p>
+  <main id="daftar" class="daftar"></main>
+  </div>
   
 <!-- MODAL FORM (CREATE & UPDATE) -->
 <div id="modalForm" class="modal-overlay">
