@@ -174,7 +174,7 @@ header p { margin: 0; color: var(--teks-redup); }
     <button id="btnTambah" class="btn btn-primary">+ Tambah Guru/Siswa</button>
   </div>
 
-  <!-- BAGIAN KONTROL / FILTER YANG SUDAH DIRAPIKAN -->
+  <!-- KONTROL / FILTER DENGAN MAPEL DAN TIPE -->
   <div class="kontrol">
     <input id="cari" type="search" placeholder="Cari nama atau NIS/NIP..." aria-label="Cari nama atau NIS/NIP">
     
@@ -186,6 +186,10 @@ header p { margin: 0; color: var(--teks-redup); }
 
     <select id="filterKelas" aria-label="Filter Kelas">
       <option value="">Semua kelas</option>
+    </select>
+
+    <select id="filterMapel" aria-label="Filter Mapel">
+      <option value="">Semua Mapel</option>
     </select>
   </div>
 
@@ -200,7 +204,7 @@ header p { margin: 0; color: var(--teks-redup); }
     <form id="formSiswa">
       <input type="hidden" id="siswaIdOriginal">
       <div class="form-grup">
-        <label for="inputNis">NIS *</label>
+        <label for="inputNis">NIS / NIP *</label>
         <input type="text" id="inputNis" required>
       </div>
       <div class="form-grup">
@@ -252,10 +256,11 @@ const elDaftar = document.getElementById("daftar");
 const elJumlah = document.getElementById("jumlah");
 const elCari = document.getElementById("cari");
 const elKelas = document.getElementById("filterKelas");
+const elMapel = document.getElementById("filterMapel");
 
 const modalForm = document.getElementById("modalForm");
 const modalJudul = document.getElementById("modalJudul");
-const formSiswa = document.getElementById("formSsiswa") || document.getElementById("formSiswa");
+const formSiswa = document.getElementById("formSiswa");
 const btnTambah = document.getElementById("btnTambah");
 const btnBatal = document.getElementById("btnBatal");
 
@@ -417,7 +422,7 @@ async function hapusSiswa(nis, nama) {
 
 // --- MODAL UTILITIES ---
 function bukaModalTambah() {
-  modalJudul.textContent = "Tambah Siswa";
+  modalJudul.textContent = "Tambah Data";
   siswaIdOriginal.value = "";
   formSiswa.reset();
   inputNis.removeAttribute("readonly");
@@ -425,7 +430,7 @@ function bukaModalTambah() {
 }
 
 function bukaModalEdit(s) {
-  modalJudul.textContent = "Edit Data Siswa";
+  modalJudul.textContent = "Edit Data";
   siswaIdOriginal.value = s.nis;
   
   inputNis.value = s.nis;
