@@ -174,7 +174,7 @@ header p { margin: 0; color: var(--teks-redup); }
     <button id="btnTambah" class="btn btn-primary">+ Tambah Guru/Siswa</button>
   </div>
 
-  <!-- KONTROL / FILTER DENGAN MAPEL DAN TIPE -->
+  <!-- KONTROL / FILTER -->
   <div class="kontrol">
     <input id="cari" type="search" placeholder="Cari nama atau NIS/NIP..." aria-label="Cari nama atau NIS/NIP">
     
@@ -189,7 +189,7 @@ header p { margin: 0; color: var(--teks-redup); }
     </select>
 
     <select id="filterMapel" aria-label="Filter Mapel">
-      <option value="">Mapel</option>
+      <option value="">Semua Mapel</option>
     </select>
   </div>
 
@@ -200,7 +200,7 @@ header p { margin: 0; color: var(--teks-redup); }
 <!-- MODAL FORM (CREATE & UPDATE) -->
 <div id="modalForm" class="modal-overlay">
   <div class="modal">
-    <h2 id="modalJudul">Tambah Siswa</h2>
+    <h2 id="modalJudul">Tambah Data</h2>
     <form id="formSiswa">
       <input type="hidden" id="siswaIdOriginal">
       <div class="form-grup">
@@ -213,7 +213,11 @@ header p { margin: 0; color: var(--teks-redup); }
       </div>
       <div class="form-grup">
         <label for="inputKelas">Kelas *</label>
-        <input type="text" id="inputKelas" placeholder="Contoh: XII TKJ 1" required>
+        <input type="text" id="inputKelas" placeholder="Contoh: XII TKJ 1 / Jabatan Guru" required>
+      </div>
+      <div class="form-grup">
+        <label for="inputMapel">Mata Pelajaran (Khusus Guru)</label>
+        <input type="text" id="inputMapel" placeholder="Contoh: Produktif TKJ">
       </div>
       <div class="form-grup">
         <label for="inputJK">Jenis Kelamin</label>
@@ -268,6 +272,7 @@ const btnBatal = document.getElementById("btnBatal");
 const inputNis = document.getElementById("inputNis");
 const inputNama = document.getElementById("inputNama");
 const inputKelas = document.getElementById("inputKelas");
+const inputMapel = document.getElementById("inputMapel");
 const inputJK = document.getElementById("inputJK");
 const inputTglLahir = document.getElementById("inputTglLahir");
 const inputAlamat = document.getElementById("inputAlamat");
@@ -278,10 +283,10 @@ let semuaSiswa = [];
 
 // --- READ DATA ---
 async function muatData() {
-  tampilkanPesan("Memuat data siswa...");
+  tampilkanPesan("Memuat data...");
   const { data, error } = await db
     .from("siswa")
-    .select("nis, nama, kelas, jenis_kelamin, tanggal_lahir, alamat, foto_url")
+    .select("nis, nama, kelas, mapel, jenis_kelamin, tanggal_lahir, alamat, foto_url")
     .order("nama");
 
   if (error) {
@@ -291,24 +296,27 @@ async function muatData() {
   }
   semuaSiswa = data;
   isiPilihanKelas();
+  isiPilihanMapel();
   tampilkanSiswa();
 }
 
 function tampilkanSiswa() {
   const kataKunci = elCari.value.trim().toLowerCase();
   const kelasDipilih = elKelas.value;
+  const mapelDipilih = elMapel.value;
 
   const hasil = semuaSiswa.filter((s) => {
     const cocokKelas = !kelasDipilih || s.kelas === kelasDipilih;
+    const cocokMapel = !mapelDipilih || s.mapel === mapelDipilih;
     const cocokCari = !kataKunci || s.nama.toLowerCase().includes(kataKunci) || s.nis.toLowerCase().includes(kataKunci);
-    return cocokKelas && cocokCari;
+    return cocokKelas && cocokMapel && cocokCari;
   });
 
-  elJumlah.textContent = hasil.length + " dari " + semuaSiswa.length + " siswa";
+  elJumlah.textContent = hasil.length + " dari " + semuaSiswa.length + " data";
   elDaftar.replaceChildren();
 
   if (hasil.length === 0) {
-    tampilkanPesan(semuaSiswa.length === 0 ? "Belum ada data siswa." : "Tidak ada siswa yang cocok.");
+    tampilkanPesan(semuaSiswa.length === 0 ? "Belum ada data." : "Tidak ada data yang cocok.");
     return;
   }
 
@@ -334,10 +342,11 @@ function buatKartu(s) {
 
   isi.appendChild(foto);
   isi.appendChild(el("h2", "nama", s.nama));
-  isi.appendChild(el("p", "nis", "NIS " + s.nis));
+  isi.appendChild(el("p", "nis", "NIS/NIP " + s.nis));
 
   const rincian = el("dl", "rincian");
   tambahBaris(rincian, "Kelas", s.kelas);
+  tambahBaris(rincian, "Mapel", s.mapel);
   tambahBaris(rincian, "Jenis kelamin", s.jenis_kelamin);
   tambahBaris(rincian, "Tanggal lahir", formatTanggal(s.tanggal_lahir));
   tambahBaris(rincian, "Alamat", s.alamat);
@@ -369,6 +378,7 @@ formSiswa.addEventListener("submit", async (e) => {
     nis: inputNis.value.trim(),
     nama: inputNama.value.trim(),
     kelas: inputKelas.value.trim(),
+    mapel: inputMapel.value.trim() || null,
     jenis_kelamin: inputJK.value || null,
     tanggal_lahir: inputTglLahir.value || null,
     alamat: inputAlamat.value.trim() || null,
@@ -404,7 +414,7 @@ formSiswa.addEventListener("submit", async (e) => {
 
 // --- DELETE DATA ---
 async function hapusSiswa(nis, nama) {
-  if (!confirm(`Apakah Anda yakin ingin menghapus data "${nama}" (NIS: ${nis})?`)) {
+  if (!confirm(`Apakah Anda yakin ingin menghapus data "${nama}" (NIS/NIP: ${nis})?`)) {
     return;
   }
 
@@ -436,6 +446,7 @@ function bukaModalEdit(s) {
   inputNis.value = s.nis;
   inputNama.value = s.nama;
   inputKelas.value = s.kelas || "";
+  inputMapel.value = s.mapel || "";
   inputJK.value = s.jenis_kelamin || "";
   inputTglLahir.value = s.tanggal_lahir || "";
   inputAlamat.value = s.alamat || "";
@@ -493,8 +504,21 @@ function isiPilihanKelas() {
   elKelas.value = kelasSaatIni;
 }
 
+function isiPilihanMapel() {
+  const mapelSaatIni = elMapel.value;
+  elMapel.innerHTML = '<option value="">Semua Mapel</option>';
+  const daftarMapel = [...new Set(semuaSiswa.map((s) => s.mapel).filter(Boolean))].sort();
+  daftarMapel.forEach((m) => {
+    const opsi = el("option", "", m);
+    opsi.value = m;
+    elMapel.appendChild(opsi);
+  });
+  elMapel.value = mapelSaatIni;
+}
+
 elCari.addEventListener("input", tampilkanSiswa);
 elKelas.addEventListener("change", tampilkanSiswa);
+elMapel.addEventListener("change", tampilkanSiswa);
 muatData();
 </script>
 </body>
