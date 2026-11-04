@@ -181,6 +181,7 @@ header p { margin: 0; color: var(--teks-redup); }
     <input id="cari" type="search" placeholder="Cari nama atau NIS/NIP..." aria-label="Cari nama atau NIS/NIP">
     
     <select id="filterTipe" aria-label="Filter Guru atau Siswa">
+      <option value="">Guru & Siswa</option>
       <option value="siswa">Siswa</option>
       <option value="guru">Guru</option>
     </select>
@@ -292,19 +293,39 @@ let semuaData = [];
 // --- READ DATA ---
 async function muatData() {
   tampilkanPesan("Memuat data...");
-  const tipeAktif = elTipe.value || "siswa";
+  const tipeAktif = elTipe.value;
 
-  const { data, error } = await db
-    .from(tipeAktif)
-    .select("*")
-    .order("nama");
+  if (!tipeAktif) {
+    // Jika memilih "Guru & Siswa", ambil dari kedua tabel secara paralel
+    const [resSiswa, resGuru] = await Promise.all([
+      db.from("siswa").select("*"),
+      db.from("guru").select("*")
+    ]);
 
-  if (error) {
-    console.error("Detail Error:", error);
-    tampilkanPesan("Data tidak bisa dimuat. Periksa kebijakan (RLS) di Supabase.", true);
-    return;
+    if (resSiswa.error || resGuru.error) {
+      console.error("Detail Error:", resSiswa.error || resGuru.error);
+      tampilkanPesan("Data tidak bisa dimuat. Periksa kebijakan (RLS) di Supabase.", true);
+      return;
+    }
+
+    const dataSiswa = (resSiswa.data || []).map(item => ({ ...item, _tipe: 'siswa' }));
+    const dataGuru = (resGuru.data || []).map(item => ({ ...item, _tipe: 'guru' }));
+    semuaData = [...dataSiswa, ...dataGuru];
+  } else {
+    // Jika memilih salah satu saja (Siswa atau Guru)
+    const { data, error } = await db
+      .from(tipeAktif)
+      .select("*")
+      .order("nama");
+
+    if (error) {
+      console.error("Detail Error:", error);
+      tampilkanPesan("Data tidak bisa dimuat. Periksa kebijakan (RLS) di Supabase.", true);
+      return;
+    }
+    semuaData = (data || []).map(item => ({ ...item, _tipe: tipeAktif }));
   }
-  semuaData = data;
+
   isiPilihanKelas();
   isiPilihanMapel();
   tampilkanData();
@@ -317,8 +338,9 @@ function tampilkanData() {
   const tipeAktif = elTipe.value;
 
   const hasil = semuaData.filter((s) => {
-    const cocokKelas = tipeAktif === "guru" ? true : (!kelasDipilih || s.kelas === kelasDipilih);
-    const cocokMapel = tipeAktif === "siswa" ? true : (!mapelDipilih || s.mata_pelajaran === mapelDipilih);
+    const isGuru = s._tipe === "guru";
+    const cocokKelas = isGuru ? true : (!kelasDipilih || s.kelas === kelasDipilih);
+    const cocokMapel = !isGuru ? true : (!mapelDipilih || s.mata_pelajaran === mapelDipilih);
     const idUnik = s.nis || s.nip || "";
     const cocokCari = !kataKunci || s.nama.toLowerCase().includes(kataKunci) || idUnik.toLowerCase().includes(kataKunci);
     return cocokKelas && cocokMapel && cocokCari;
@@ -332,7 +354,7 @@ function tampilkanData() {
     return;
   }
 
-  hasil.forEach((s) => elDaftar.appendChild(buatKartu(s, tipeAktif)));
+  hasil.forEach((s) => elDaftar.appendChild(buatKartu(s, s._tipe)));
 }
 
 function buatKartu(s, tipe) {
@@ -391,7 +413,7 @@ function buatKartu(s, tipe) {
 // --- CREATE & UPDATE DATA ---
 formSiswa.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const tipeAktif = elTipe.value;
+  const tipeAktif = elTipe.value || "siswa"; // Default ke siswa jika sedang di mode gabungan
   const isEdit = Boolean(siswaIdOriginal.value);
 
   let payload = {};
@@ -464,7 +486,7 @@ async function hapusData(idVal, nama, tipe) {
 
 // --- MODAL UTILITIES ---
 function bukaModalTambah() {
-  const tipeAktif = elTipe.value;
+  const tipeAktif = elTipe.value || "siswa";
   modalJudul.textContent = tipeAktif === "guru" ? "Tambah Data Guru" : "Tambah Data Siswa";
   siswaIdOriginal.value = "";
   formSiswa.reset();
@@ -566,9 +588,11 @@ function tampilkanPesan(teks, galat) {
 function isiPilihanKelas() {
   const kelasSaatIni = elKelas.value;
   elKelas.innerHTML = '<option value="">Semua kelas</option>';
-  if (elTipe.value === "siswa") {
+  const tipeAktif = elTipe.value;
+  
+  if (tipeAktif !== "guru") {
     elKelas.style.display = "inline-block";
-    const daftarKelas = [...new Set(semuaData.map((s) => s.kelas).filter(Boolean))].sort();
+    const daftarKelas = [...new Set(semuaData.filter(s => s._tipe === "siswa").map((s) => s.kelas).filter(Boolean))].sort();
     daftarKelas.forEach((k) => {
       const opsi = el("option", "", k);
       opsi.value = k;
@@ -583,9 +607,11 @@ function isiPilihanKelas() {
 function isiPilihanMapel() {
   const mapelSaatIni = elMapel.value;
   elMapel.innerHTML = '<option value="">Semua Mapel</option>';
-  if (elTipe.value === "guru") {
+  const tipeAktif = elTipe.value;
+
+  if (tipeAktif !== "siswa") {
     elMapel.style.display = "inline-block";
-    const daftarMapel = [...new Set(semuaData.map((s) => s.mata_pelajaran).filter(Boolean))].sort();
+    const daftarMapel = [...new Set(semuaData.filter(s => s._tipe === "guru").map((s) => s.mata_pelajaran).filter(Boolean))].sort();
     daftarMapel.forEach((m) => {
       const opsi = el("option", "", m);
       opsi.value = m;
