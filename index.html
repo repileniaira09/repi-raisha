@@ -216,15 +216,15 @@ header p { margin: 0; color: var(--teks-redup); }
         <label for="inputKelas">Kelas *</label>
         <input type="text" id="inputKelas" placeholder="Contoh: XI TKJ 1">
       </div>
-      <div class="form-grup">
+      <div class="form-grup" id="grupMapel">
         <label for="inputMapel">Mata Pelajaran / Keahlian *</label>
-        <input type="text" id="inputMapel" required placeholder="Contoh: Administrasi Server">
+        <input type="text" id="inputMapel" placeholder="Contoh: Administrasi Server">
       </div>
       <div class="form-grup">
         <label for="inputJK">Jenis Kelamin</label>
         <select id="inputJK">
           <option value="">-- Pilih --</option>
-          <option value="Laki-Laki">Laki-Laki</option>
+          <option value="Laki-laki">Laki-laki</option>
           <option value="Perempuan">Perempuan</option>
         </select>
       </div>
@@ -281,6 +281,7 @@ const inputFoto = document.getElementById("inputFoto");
 const siswaIdOriginal = document.getElementById("siswaIdOriginal");
 
 const grupKelas = document.getElementById("grupKelas");
+const grupMapel = document.getElementById("grupMapel");
 const grupTglLahir = document.getElementById("grupTglLahir");
 const grupAlamat = document.getElementById("grupAlamat");
 const grupFoto = document.getElementById("grupFoto");
@@ -317,7 +318,7 @@ function tampilkanData() {
 
   const hasil = semuaData.filter((s) => {
     const cocokKelas = tipeAktif === "guru" ? true : (!kelasDipilih || s.kelas === kelasDipilih);
-    const cocokMapel = !mapelDipilih || s.mata_pelajaran === mapelDipilih;
+    const cocokMapel = tipeAktif === "siswa" ? true : (!mapelDipilih || s.mata_pelajaran === mapelDipilih);
     const idUnik = s.nis || s.nip || "";
     const cocokCari = !kataKunci || s.nama.toLowerCase().includes(kataKunci) || idUnik.toLowerCase().includes(kataKunci);
     return cocokKelas && cocokMapel && cocokCari;
@@ -361,12 +362,12 @@ function buatKartu(s, tipe) {
   const rincian = el("dl", "rincian");
   if (tipe === "siswa") {
     tambahBaris(rincian, "Kelas", s.kelas);
-  }
-  tambahBaris(rincian, "Mapel/Keahlian", s.mata_pelajaran);
-  tambahBaris(rincian, "Jenis kelamin", s.jenis_kelamin);
-  if (tipe === "siswa") {
+    tambahBaris(rincian, "Jenis kelamin", s.jenis_kelamin);
     tambahBaris(rincian, "Tanggal lahir", formatTanggal(s.tanggal_lahir));
     tambahBaris(rincian, "Alamat", s.alamat);
+  } else {
+    tambahBaris(rincian, "Mapel / Keahlian", s.mata_pelajaran);
+    tambahBaris(rincian, "Jenis kelamin", s.jenis_kelamin);
   }
   
   isi.appendChild(rincian);
@@ -406,7 +407,6 @@ formSiswa.addEventListener("submit", async (e) => {
       nis: inputNis.value.trim(),
       nama: inputNama.value.trim(),
       kelas: inputKelas.value.trim(),
-      mata_pelajaran: inputMapel.value.trim(),
       jenis_kelamin: inputJK.value || null,
       tanggal_lahir: inputTglLahir.value || null,
       alamat: inputAlamat.value.trim() || null,
@@ -472,12 +472,16 @@ function bukaModalTambah() {
   if (tipeAktif === "guru") {
     labelNis.textContent = "NIP *";
     grupKelas.style.display = "none";
+    grupMapel.style.display = "flex";
+    inputMapel.setAttribute("required", "true");
     grupTglLahir.style.display = "none";
     grupAlamat.style.display = "none";
     grupFoto.style.display = "none";
   } else {
-    labelNis.textContent = "NIS / NIP *";
+    labelNis.textContent = "NIS *";
     grupKelas.style.display = "flex";
+    grupMapel.style.display = "none";
+    inputMapel.removeAttribute("required");
     grupTglLahir.style.display = "flex";
     grupAlamat.style.display = "flex";
     grupFoto.style.display = "flex";
@@ -493,18 +497,22 @@ function bukaModalEdit(s, tipe) {
   
   inputNis.value = s.nip || s.nis;
   inputNama.value = s.nama;
-  inputMapel.value = s.mata_pelajaran || "";
   inputJK.value = s.jenis_kelamin || "";
 
   if (tipe === "guru") {
     labelNis.textContent = "NIP *";
     grupKelas.style.display = "none";
+    grupMapel.style.display = "flex";
+    inputMapel.setAttribute("required", "true");
+    inputMapel.value = s.mata_pelajaran || "";
     grupTglLahir.style.display = "none";
     grupAlamat.style.display = "none";
     grupFoto.style.display = "none";
   } else {
-    labelNis.textContent = "NIS / NIP *";
+    labelNis.textContent = "NIS *";
     grupKelas.style.display = "flex";
+    grupMapel.style.display = "none";
+    inputMapel.removeAttribute("required");
     grupTglLahir.style.display = "flex";
     grupAlamat.style.display = "flex";
     grupFoto.style.display = "flex";
@@ -558,25 +566,35 @@ function tampilkanPesan(teks, galat) {
 function isiPilihanKelas() {
   const kelasSaatIni = elKelas.value;
   elKelas.innerHTML = '<option value="">Semua kelas</option>';
-  const daftarKelas = [...new Set(semuaData.map((s) => s.kelas).filter(Boolean))].sort();
-  daftarKelas.forEach((k) => {
-    const opsi = el("option", "", k);
-    opsi.value = k;
-    elKelas.appendChild(opsi);
-  });
-  elKelas.value = kelasSaatIni;
+  if (elTipe.value === "siswa") {
+    elKelas.style.display = "inline-block";
+    const daftarKelas = [...new Set(semuaData.map((s) => s.kelas).filter(Boolean))].sort();
+    daftarKelas.forEach((k) => {
+      const opsi = el("option", "", k);
+      opsi.value = k;
+      elKelas.appendChild(opsi);
+    });
+    elKelas.value = kelasSaatIni;
+  } else {
+    elKelas.style.display = "none";
+  }
 }
 
 function isiPilihanMapel() {
   const mapelSaatIni = elMapel.value;
   elMapel.innerHTML = '<option value="">Semua Mapel</option>';
-  const daftarMapel = [...new Set(semuaData.map((s) => s.mata_pelajaran).filter(Boolean))].sort();
-  daftarMapel.forEach((m) => {
-    const opsi = el("option", "", m);
-    opsi.value = m;
-    elMapel.appendChild(opsi);
-  });
-  elMapel.value = mapelSaatIni;
+  if (elTipe.value === "guru") {
+    elMapel.style.display = "inline-block";
+    const daftarMapel = [...new Set(semuaData.map((s) => s.mata_pelajaran).filter(Boolean))].sort();
+    daftarMapel.forEach((m) => {
+      const opsi = el("option", "", m);
+      opsi.value = m;
+      elMapel.appendChild(opsi);
+    });
+    elMapel.value = mapelSaatIni;
+  } else {
+    elMapel.style.display = "none";
+  }
 }
 
 elCari.addEventListener("input", tampilkanData);
@@ -584,13 +602,6 @@ elKelas.addEventListener("change", tampilkanData);
 elMapel.addEventListener("change", tampilkanData);
 
 elTipe.addEventListener("change", (e) => {
-  const tipe = e.target.value;
-  if (tipe === "guru") {
-    elKelas.style.display = "none";
-    elKelas.value = "";
-  } else {
-    elKelas.style.display = "inline-block";
-  }
   muatData();
 });
 
